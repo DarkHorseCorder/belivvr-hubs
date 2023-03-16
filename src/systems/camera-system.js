@@ -442,6 +442,7 @@ export class CameraSystem {
       this.ensureListenerIsParentedCorrectly(scene);
 
       if (this.mode === CAMERA_MODE_FIRST_PERSON) {
+        window.myAvatarHead?.scale.set(0,0,0);
         this.viewingCameraRotator.on = false;
         this.avatarRig.object3D.updateMatrices();
         setMatrixWorld(this.viewingRig.object3D, this.avatarRig.object3D.matrixWorld);
@@ -513,6 +514,7 @@ export class CameraSystem {
           );
         }
       } else if (this.mode === CAMERA_MODE_THIRD_PERSON_VIEW) {
+        window.myAvatarHead?.scale.set(1,1,1);
         this.viewingCameraRotator.on = false;
         translation.makeTranslation(0, 0, 1);
         this.avatarRig.object3D.updateMatrices();

@@ -38,10 +38,14 @@ AFRAME.registerComponent("avatar-animation", {
 
   tick() {
     this.mixer.update(this.clock.getDelta());
-
     if (this.isMe) {
-      const [right, front] = this.userinput.get(paths.actions.characterAcceleration);
-      this.el.setAttribute("avatar-animation", { front, right });
+      const position = this.userinput.get(paths.actions.characterAcceleration);
+
+      if (position) {
+        const [right, front] = position;
+        this.el.setAttribute("avatar-animation", { front, right });
+      }
+
     }
   },
 
@@ -54,7 +58,7 @@ AFRAME.registerComponent("avatar-animation", {
     this.resetAll(ANIMATIONS.IDLE);
     this.setEffectiveWeight(ANIMATIONS.IDLE, 1);
   },
-  
+
   resetAll(...ignore: string[]) {
     this.animations.forEach((animation: THREE.AnimationAction) => {
       if (ignore.includes(animation.getClip().name)) return;

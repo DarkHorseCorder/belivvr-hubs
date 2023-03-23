@@ -27,6 +27,11 @@ AFRAME.registerComponent("avatar-animation", {
   },
 
   init() {
+    document.addEventListener("nipple-move", (e: any) => {
+      const { front, right } = e.detail;
+      this.el.setAttribute("avatar-animation", { front, right });
+    })
+
     this.animations = new Map();
     this.mixer = new THREE.AnimationMixer(this.el.object3D?.parent || this.el.object3D);
     this.clock = new THREE.Clock();

@@ -13,7 +13,12 @@ const ROTATION_SPEED = 0.025;
  * @component virtual-gamepad-controls
  */
 AFRAME.registerComponent("virtual-gamepad-controls", {
-  schema: {},
+  schema: {
+    position: {default: {
+      front: 0,
+      right: 0
+    }}
+  },
 
   init() {
     window.addEventListener("mobile-freeze", () => {
@@ -182,6 +187,28 @@ AFRAME.registerComponent("virtual-gamepad-controls", {
     const force = joystick.force < 1 ? joystick.force : 1;
     this.displacement.set(Math.cos(angle), 0, -Math.sin(angle)).multiplyScalar(force * 1.85);
     this.moving = true;
+
+    const degree = angle * 180 / Math.PI;
+    if(degree <= 90) {
+      this.data.position.front = 1;
+      this.data.position.right = 1;
+      return;
+    }
+
+    if(degree <= 180) {
+      this.data.position.front = 1;
+      this.data.position.right = -1;
+      return;
+    }
+
+    if(degree <= 270) {
+      this.data.position.front = -1;
+      this.data.position.right = -1
+      return;
+    }
+
+    this.data.position.front = -1;
+    this.data.position.right = 1;
   },
 
   onMoveJoystickEnd() {
@@ -211,6 +238,8 @@ AFRAME.registerComponent("virtual-gamepad-controls", {
       return;
     }
     if (this.moving) {
+      const event = new CustomEvent("nipple-move", {detail: this.data.position});
+      document.dispatchEvent(event);
       this.characterController.enqueueRelativeMotion(this.displacement);
     }
     if (this.rotating) {

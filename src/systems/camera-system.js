@@ -519,9 +519,8 @@ export class CameraSystem {
           );
         }
       } else if (this.mode === CAMERA_MODE_THIRD_PERSON_VIEW) {
-        window.myAvatarHead?.scale.set(1,1,1);
         this.viewingCameraRotator.on = false;
-        translation.makeTranslation(0, 0, 1);
+        translation.makeTranslation(0, 0, 2);
         this.avatarRig.object3D.updateMatrices();
         setMatrixWorld(this.viewingRig.object3D, this.avatarRig.object3D.matrixWorld);
         if (scene.is("vr-mode")) {

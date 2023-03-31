@@ -462,9 +462,6 @@ export function createHeadlessModelForSkinnedMesh(mesh) {
 }
 
 export function createModelForSkinnedMesh(mesh) {
-  mesh.skeleton.bones.forEach((bone) => {
-    bone.name === "Head" ? window.myAvatarHead = bone : null;
-  })
   return createErasedMesh(mesh, []);
 }
 

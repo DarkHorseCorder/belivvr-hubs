@@ -7,6 +7,7 @@ import { Layers } from "../camera-layers";
 
 function ensureAvatarNodes(json) {
   const { nodes } = json;
+  
   if (!nodes.some(node => node.name === "Head")) {
     // If the avatar model doesn't have a Head node. The user has probably chosen a custom GLB.
     // So, we need to construct a suitable hierarchy for avatar functionality to work.
@@ -27,6 +28,13 @@ function ensureAvatarNodes(json) {
     nodes.push({ name: "AvatarRoot", children: [nodes.length - 1] });
     json.scenes[json.scene].nodes[0] = nodes.length - 1;
   }
+
+  nodes.filter(node => {
+    if(node.name === "Neck") node.extensions = { MOZ_hubs_components: { "scale-audio-feedback": "" } }
+    if(node.name === "LeftEye") node.extensions = { MOZ_hubs_components: { "scale-audio-feedback": "" } }
+    if(node.name === "RightEye") node.extensions = { MOZ_hubs_components: { "scale-audio-feedback": "" } }
+  })
+
   return json;
 }
 

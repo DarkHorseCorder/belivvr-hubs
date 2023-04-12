@@ -5,6 +5,8 @@ import copy from "copy-to-clipboard";
 import { FormattedMessage } from "react-intl";
 import screenfull from "screenfull";
 
+import { MyCameraTool } from "../bit-components";
+import { anyEntityWith } from "../utils/bit-utils";
 import configs from "../utils/configs";
 import { VR_DEVICE_AVAILABILITY } from "../utils/vr-caps-detect";
 import { canShare } from "../utils/share";
@@ -48,8 +50,10 @@ import { ToolbarButton } from "./input/ToolbarButton";
 import { RoomEntryModal } from "./room/RoomEntryModal";
 import { EnterOnDeviceModal } from "./room/EnterOnDeviceModal";
 import { MicSetupModalContainer } from "./room/MicSetupModalContainer";
+// eslint-disable-next-line no-unused-vars
 import { MoreMenuPopoverButton, CompactMoreMenuButton, MoreMenuContextProvider } from "./room/MoreMenuPopover";
 import { ChatSidebarContainer, ChatContextProvider, ChatToolbarButtonContainer } from "./room/ChatSidebarContainer";
+// eslint-disable-next-line no-unused-vars
 import { ContentMenu, PeopleMenuButton, ObjectsMenuButton, ECSDebugMenuButton } from "./room/ContentMenu";
 import { ReactComponent as CameraIcon } from "./icons/Camera.svg";
 import { ReactComponent as AvatarIcon } from "./icons/Avatar.svg";
@@ -68,11 +72,13 @@ import { ReactComponent as DiscordIcon } from "./icons/Discord.svg";
 import { ReactComponent as VRIcon } from "./icons/VR.svg";
 import { ReactComponent as LeaveIcon } from "./icons/Leave.svg";
 import { ReactComponent as EnterIcon } from "./icons/Enter.svg";
+import { ReactComponent as ExternalLink } from "./icons/ExternalLink.svg";
 import { PeopleSidebarContainer, userFromPresence } from "./room/PeopleSidebarContainer";
 import { ObjectListProvider } from "./room/useObjectList";
 import { ObjectsSidebarContainer } from "./room/ObjectsSidebarContainer";
 import { ObjectMenuContainer } from "./room/ObjectMenuContainer";
 import { useCssBreakpoints } from "react-use-css-breakpoints";
+// eslint-disable-next-line no-unused-vars
 import { PlacePopoverContainer } from "./room/PlacePopoverContainer";
 import { SharePopoverContainer } from "./room/SharePopoverContainer";
 import { AudioPopoverContainer } from "./room/AudioPopoverContainer";
@@ -97,6 +103,7 @@ import { TERMS, PRIVACY } from "../constants";
 import { ECSDebugSidebarContainer } from "./debug-panel/ECSSidebar";
 import { NotificationsContainer } from "./room/NotificationsContainer";
 import { usePermissions } from "./room/usePermissions";
+import { ChannelSidebarContainer } from "./room/ChannelSidebarContainer";
 
 const avatarEditorDebug = qsTruthy("avatarEditorDebug");
 
@@ -204,7 +211,9 @@ class UIRoot extends Component {
     chatInputEffect: () => {},
 
     shareScreenPermitted: window.XRCLOUD?.permissions?.share_screen,
-    isMute: false
+    isMute: false,
+
+    channels: [],
   };
 
   constructor(props) {
@@ -391,6 +400,28 @@ class UIRoot extends Component {
     this.playerRig = scene.querySelector("#avatar-rig");
 
     scene.addEventListener("action_media_tweet", this.onTweet);
+
+    this.setState(
+      {
+        channels: [
+          {
+            id: 1,
+            title: "용봉관",
+            roomUrl: "https://www.naver.com"
+          },
+          {
+            id: 2,
+            title: "용봉관2",
+            roomUrl: "https://www.naver.com"
+          },
+          {
+            id: 3,
+            title: "용봉관3",
+            roomUrl: "https://www.naver.com"
+          },
+        ]
+      }
+    )
   }
 
   UNSAFE_componentWillMount() {
@@ -1096,7 +1127,7 @@ class UIRoot extends Component {
 
     const streaming = this.state.isStreaming;
 
-    const showObjectList = enteredOrWatching;
+    // const showObjectList = enteredOrWatching;
     const showECSObjectsMenuButton = qsTruthy("ecsDebug");
 
     const streamer = getCurrentStreamer();
@@ -1108,6 +1139,7 @@ class UIRoot extends Component {
     const canCloseRoom = this.props.hubChannel && !!this.props.hubChannel.canOrWillIfCreator("close_hub");
     const isModerator = this.props.hubChannel && this.props.hubChannel.canOrWillIfCreator("kick_users") && !isMobileVR;
 
+    // eslint-disable-next-line no-unused-vars
     const moreMenu = [
       {
         id: "user",
@@ -1297,6 +1329,8 @@ class UIRoot extends Component {
       }
     ];
 
+    const qsFuncs = new URLSearchParams(location.search).get("funcs")?.split(",");
+    
     return (
       <MoreMenuContextProvider>
         <ReactAudioContext.Provider value={this.state.audioContext}>
@@ -1373,12 +1407,12 @@ class UIRoot extends Component {
                     {(!this.props.selectedObject ||
                       (this.props.breakpoint !== "sm" && this.props.breakpoint !== "md")) && (
                       <ContentMenu>
-                        {showObjectList && (
+                        {/* {showObjectList && (
                           <ObjectsMenuButton
                             active={this.state.sidebarId === "objects"}
                             onClick={() => this.toggleSidebar("objects")}
                           />
-                        )}
+                        )} */}
                         <PeopleMenuButton
                           active={this.state.sidebarId === "people"}
                           onClick={() => this.toggleSidebar("people")}
@@ -1454,6 +1488,11 @@ class UIRoot extends Component {
                 sidebar={
                   this.state.sidebarId ? (
                     <>
+                      {
+                        this.state.sidebarId === "channel" && (
+                          <ChannelSidebarContainer channels={this.state.channels} onClose={() => this.setSidebar(null)}></ChannelSidebarContainer>
+                        )
+                      }
                       {this.state.sidebarId === "chat" && (
                         <ChatSidebarContainer
                           presences={this.props.presences}
@@ -1571,16 +1610,36 @@ class UIRoot extends Component {
                     )}
                     {entered && (
                       <>
+                        {
+                          qsFuncs?.some(str => str === "mainpage") && 
+                            (<ToolbarButton
+                              icon={<HomeIcon />}
+                              label={<FormattedMessage id="toolbar.mainpage" defaultMessage="Go to mainpage" />}
+                              onClick={() => {
+                                window.location = "https://cnumeta.jnu.ac.kr/"
+                              }}
+                            />)
+                        }
                         {!isMute && <AudioPopoverContainer scene={this.props.scene} />}
                         {shareScreenPermitted && (
                           <SharePopoverContainer scene={this.props.scene} hubChannel={this.props.hubChannel} />
                         )}
-                        <PlacePopoverContainer
+                        {/* <PlacePopoverContainer
                           scene={this.props.scene}
                           hubChannel={this.props.hubChannel}
                           mediaSearchStore={this.props.mediaSearchStore}
                           showNonHistoriedDialog={this.showNonHistoriedDialog}
-                        />
+                        />   */}
+                        {
+                          this.props.hubChannel.can("spawn_camera") && <ToolbarButton
+                          key="cameara"
+                          icon={<CameraIcon/>}
+                          preset="accent5"
+                          onClick={() => this.props.scene.emit("action_toggle_camera")}
+                          label={<FormattedMessage id="place-popover.item-type.camera" defaultMessage="Camera" />}
+                          selected={!!anyEntityWith(APP.world, MyCameraTool)}
+                          />
+                        }
                         {this.props.hubChannel.can("spawn_emoji") && (
                           <ReactionPopoverContainer
                             scene={this.props.scene}
@@ -1607,6 +1666,18 @@ class UIRoot extends Component {
                         }}
                       />
                     )}
+                    {entered && 
+                      qsFuncs?.some(str => str === "channel") && 
+                        (
+                          <ToolbarButton 
+                            icon={<ExternalLink />}
+                            label={<FormattedMessage id="toolbar.channel" defaultMessage="channel" />}
+                            onClick={() => {
+                              this.setSidebar("channel");
+                            }}
+                          />
+                        )
+                    }
                     {entered && isMobileVR && (
                       <ToolbarButton
                         className={styleUtils.hideLg}
@@ -1628,7 +1699,7 @@ class UIRoot extends Component {
                         onClick={() => exit2DInterstitialAndEnterVR(true)}
                       />
                     )}
-                    {entered && (
+                    {/* {entered && (
                       <ToolbarButton
                         icon={<LeaveIcon />}
                         label={<FormattedMessage id="toolbar.leave-room-button" defaultMessage="Leave" />}
@@ -1640,8 +1711,8 @@ class UIRoot extends Component {
                           });
                         }}
                       />
-                    )}
-                    <MoreMenuPopoverButton menu={moreMenu} />
+                    )} */}
+                    {/* <MoreMenuPopoverButton menu={moreMenu} /> */}
                   </>
                 }
               />

@@ -162,11 +162,11 @@ export default class HubChannel extends EventTarget {
     this.token = token;
     this._permissions = jwtDecode(token);
 
-    if(this._permissions.kick_users){
-      this._permissions.freeze = true;
-      this._permissions.grant_share_screen = true;
-      this._permissions.apply_mute = true;
-    }
+    // if(this._permissions.kick_users){
+    //   this._permissions.freeze = true;
+    //   this._permissions.grant_share_screen = true;
+    //   this._permissions.apply_mute = true;
+    // }
 
     configs.setIsAdmin(this._permissions.postgrest_role === "ret_admin");
     this.dispatchEvent(new CustomEvent("permissions_updated"));

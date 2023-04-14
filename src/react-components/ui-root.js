@@ -1621,7 +1621,7 @@ class UIRoot extends Component {
                             />)
                         }
                         {!isMute && <AudioPopoverContainer scene={this.props.scene} />}
-                        {shareScreenPermitted && (
+                        {(shareScreenPermitted || this.props.hubChannel.canOrWillIfCreator("grant_share_screen")) && (
                           <SharePopoverContainer scene={this.props.scene} hubChannel={this.props.hubChannel} />
                         )}
                         {/* <PlacePopoverContainer
